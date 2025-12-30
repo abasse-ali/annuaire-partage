@@ -198,7 +198,11 @@ def Gestion_Permission(donnee, demandeur):
             colonnes = list(csv.reader(fichier))
     
     nouveau = [ligne for ligne in colonnes if not (ligne[0] == demandeur and ligne[1] == cible)]
-    if action == "donner": nouveau.append([demandeur, cible])
+    if demandeur != cible:
+        if action == "donner":
+            nouveau.append([demandeur, cible])
+    else:
+        return {"status": 401, "message": "Vous n’avez pas le droit de vous cibler vous-même"}
     
     with open(FICHIER_PERMISSIONS, "w", newline="", encoding="utf-8") as fichier:
         csv.writer(fichier).writerows(nouveau)
