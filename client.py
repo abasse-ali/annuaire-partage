@@ -1,3 +1,7 @@
+"""
+Client
+"""
+
 import re
 import os
 from hashlib import sha512
@@ -40,8 +44,7 @@ Serveur -> Client (Reponse) :
 def deco_console(titre: str, taille: int, options_brutes: list, sous_titre: str = None):
     options = [str(opt) for opt in options_brutes if opt is not None]
     largeur_utile = taille - 4
-
-    print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
+    
     print("=" * taille)
     print(f"{titre:^{taille}}")
     print("=" * taille)
@@ -115,7 +118,7 @@ def menu_modif(prenom, nom, tel, adresse, mail):
 def menu_compte(utilisateur):
     clear_console()
     titre = "--- GESTION COMPTES ---"
-    taille = 50
+    taille = 40
     options = [
         "1. Créer Compte",
         "2. Supprimer Compte",
@@ -124,51 +127,93 @@ def menu_compte(utilisateur):
     ]
     print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
     deco_console(titre, taille, options)
-    while True:
-        choix_compte = input("Faites votre choix > ")
-        if choix_compte == "1":
-            clear_console()
-            print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
-            print("=" * taille)
-            print(f"{"--- CRÉER UN COMPTE ---":^{taille}}")
-            print("=" * taille)
-            while True:
-                nom = input("Nom d'utilisateur : ")
-                if nom == "":
-                    print("Insérer un Nom d'utilisateur")
-                else:
-                    break
-            while True:
-                mdp = getpass("Mot de passe : ")
-                if len(mdp) < 5 :
-                    print("Le Mot de passe est trop court")
-                else:
-                    mdp = sha512(mdp.encode()).hexdigest()
-                    break
-            titre = "ROLE"
-            options = ["1. Administrateur", "2. Utilisateur"]
-            deco_console(titre, taille, options)
-            while True:
-                choix_role = input("Faites votre choix > ")
-                if choix_role == "1":
-                    statut = "admin"
-                    break
-                elif choix_role == "2":
-                    statut = "utilisateur"
-                    break
-                else:
-                    print("Le choix doit être entre '1' ou '2'.")
-                    continue
-            reponse = reseau.envoyer_PDU("CREATION_COMPTE", {"nom": nom, "mot_de_passe": mdp, "statut": statut}, utilisateur)
-            print(reponse["message"])
-        elif choix_compte == "2":
-            # supprimer compte
-            ...
-        elif choix_compte == "3":
-            # lister les comptes existant avec pour information (leur role, le nombre de contact dans leur annuaire, chez qui ils ont droit de consuleter
-            ...
-        elif choix_compte == "0":
-            break
+    choix_compte = input("Faites votre choix > ")
+    if choix_compte == "1":
+        clear_console()
+        print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
+        print("=" * taille)
+        print(f"{"--- CRÉER UN COMPTE ---":^{taille}}")
+        print("=" * taille)
+        while True:
+            nom = input("Nom d'utilisateur : ")
+            if nom == "":
+                print("Insérer un Nom d'utilisateur")
+            else:
+                break
+        while True:
+            mdp = getpass("Mot de passe : ")
+            if len(mdp) < 5 :
+                print("Le Mot de passe est trop court")
+            else:
+                mdp = sha512(mdp.encode()).hexdigest()
+                break
+        titre = "ROLE"
+        options = ["1. Administrateur", "2. Utilisateur"]
+        deco_console(titre, taille, options)
+        while True:
+            choix_role = input("Faites votre choix > ")
+            if choix_role == "1":
+                statut = "admin"
+                break
+            elif choix_role == "2":
+                statut = "utilisateur"
+                break
+            else:
+                print("Le choix doit être entre '1' ou '2'.")
+                continue
+        reponse = reseau.envoyer_PDU("CREATION_COMPTE", {"nom": nom, "mot_de_passe": mdp, "statut": statut}, utilisateur)
+        print(reponse["message"])
+        
+    elif choix_compte == "2":
+        clear_console()
+        print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
+        print("=" * taille)
+        print(f"{"--- SUPPRESSION COMPTE ---":^{taille}}")
+        print("=" * taille)
+        
+        cible = input("Nom du compte à supprimer : ").strip()
+        
+        if cible == utilisateur:
+            print("Erreur : Vous ne pouvez pas supprimer votre propre compte connecté.")
+        elif cible == "":
+            print("Annulation.")
+        else:
+            confirm = input(f"Êtes-vous sûr de vouloir supprimer '{cible}' ? (TOUT sera perdu) [O/N] : ").lower()
+            if confirm == "o":
+                reponse = reseau.envoyer_PDU("SUPPRESSION_COMPTE", {"nom_compte": cible}, utilisateur)
+                print(f"Résultat : {reponse['message']}")
+            else:
+                print("Suppression annulée.")
+
+    elif choix_compte == "3":
+        clear_console()
+        reponse = reseau.envoyer_PDU("INFOS_ADMIN", {}, utilisateur)
+        
+        if reponse["status"] == 200:
+            print("\033[92m" + f"{"=== LISTE GLOBALE DES COMPTES ===":^{80}}" + "\033[0m")
+            print("-" * 80)
+            # En-tête du tableau
+            print(f"| {'Nom':<20} | {'Rôle':<12} | {'Contacts':<10} | {'Accès Droit':<12} |")
+            print("-" * 80)
+            
+            for row in reponse["donnee"]:
+                nom = row['Nom']
+                role = row['Statut']
+                nb_c = str(row['Nb_Contacts'])
+                nb_d = str(row['Droits_Consultation'])
+                
+                # Code couleur : Admin en Rouge, Utilisateur en Cyan
+                coul = "\033[91m" if role == "admin" else "\033[96m"
+                reset = "\033[0m"
+                
+                print(f"| {coul}{nom:<20}{reset} | {role:<12} | {nb_c:<10} | {nb_d:<12} |")
+            print("-" * 80)
+            print(f"Total comptes : {len(reponse['donnee'])}")
+        else:
+            print("Erreur lors de la récupération des données.")
+
+    elif choix_compte == "0":
+        pass
     
 def menu_principal():
     utilisateur = None

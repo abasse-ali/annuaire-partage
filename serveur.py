@@ -1,3 +1,7 @@
+"""
+Serveur
+"""
+
 import csv
 from pathlib import Path
 
@@ -140,6 +144,114 @@ def Modification_Contact(donnee, demandeur):
 
 """
 --------------------------------------------------------------------------------------------------------
+"""
+import csv
+from pathlib import Path
+
+# Plus besoin de 'import os'
+
+def Suppression_Compte(donnee):
+    cible = donnee.get("nom_compte")
+    
+    # 1. Vérifier si le compte existe et préparer la liste filtrée
+    comptes_restants = []
+    trouve = False
+    
+    # On suppose que FICHIER_COMPTES est un objet Path
+    if FICHIER_COMPTES.exists():
+        with open(FICHIER_COMPTES, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            fieldnames = reader.fieldnames
+            for ligne in reader:
+                if ligne["Nom"] == cible:
+                    trouve = True
+                else:
+                    comptes_restants.append(ligne)
+    
+    if not trouve:
+        return {"status": 404, "message": "Compte introuvable"}
+
+    # 2. Réécrire le fichier des comptes
+    with open(FICHIER_COMPTES, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(comptes_restants)
+
+    # 3. Supprimer l'annuaire associé AVEC PATHLIB
+    # On utilise l'opérateur / pour joindre les chemins proprement
+    path_annuaire = DOSSIER_ANNUAIRES / f"annuaire_{cible}.csv"
+    
+    # .unlink() remplace os.remove()
+    # missing_ok=True évite une erreur si le fichier n'existe pas déjà (Python 3.8+)
+    try:
+        path_annuaire.unlink(missing_ok=True)
+    except FileNotFoundError:
+        pass # Anciennes versions de python sans missing_ok
+
+    # 4. Nettoyer les permissions
+    perms_restantes = []
+    if FICHIER_PERMISSIONS.exists():
+        with open(FICHIER_PERMISSIONS, "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            entete = next(reader, None)
+            if entete:
+                perms_restantes.append(entete)
+            
+            for ligne in reader:
+                # ligne[0] = Proprietaire, ligne[1] = Utilisateur_Autorise
+                # On garde la ligne si la cible n'est NI propriétaire NI autorisé
+                if len(ligne) >= 2 and ligne[0] != cible and ligne[1] != cible:
+                    perms_restantes.append(ligne)
+        
+        with open(FICHIER_PERMISSIONS, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerows(perms_restantes)
+
+    return {"status": 200, "message": f"Compte {cible} et données supprimés"}
+
+def Infos_Admin():
+    """Récupère: Nom, Role, Nb Contacts, Nb d'annuaires consultables"""
+    stats = []
+    
+    # 1. Compter les droits d'accès via le fichier permissions
+    droits_acces = {} 
+    if FICHIER_PERMISSIONS.exists():
+        with open(FICHIER_PERMISSIONS, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for ligne in reader:
+                user = ligne.get("Utilisateur_Autorise")
+                if user:
+                    droits_acces[user] = droits_acces.get(user, 0) + 1
+
+    # 2. Parcourir les comptes et compter les fichiers
+    if FICHIER_COMPTES.exists():
+        with open(FICHIER_COMPTES, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for compte in reader:
+                nom = compte["Nom"]
+                
+                # Utilisation de pathlib pour le chemin
+                path_cible = DOSSIER_ANNUAIRES / f"annuaire_{nom}.csv"
+                nb_contacts = 0
+                
+                if path_cible.exists():
+                    # Petite astuce mémoire : on compte les lignes sans charger tout le fichier
+                    # -1 pour l'entête
+                    with open(path_cible, "r", encoding="utf-8") as fa:
+                         # sum(1 for _ in fa) compte les lignes efficacement
+                        total_lignes = sum(1 for i in fa)
+                        nb_contacts = max(0, total_lignes - 1)
+                
+                stats.append({
+                    "Nom": nom,
+                    "Statut": compte["Statut"],
+                    "Nb_Contacts": nb_contacts,
+                    "Droits_Consultation": droits_acces.get(nom, 0)
+                })
+                
+    return {"status": 200, "donnee": stats}
+"""
+---------------------------------------------------------------------------------------------------------
 """
 def Liste_Proprio(demandeur):
     liste = Verification_Droit(demandeur)

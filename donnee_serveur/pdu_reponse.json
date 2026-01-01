@@ -1,4 +1,4 @@
 {
-    "status": 201,
-    "message": "Compte cr\u00e9\u00e9 avec succ\u00e8s"
+    "status": 404,
+    "message": "Compte introuvable"
 }
