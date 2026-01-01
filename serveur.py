@@ -43,7 +43,7 @@ Serveur -> Client (Reponse) :
 def Creation_Compte(donnee):
     nom = donnee.get("nom")
     mdp = donnee.get("mot_de_passe")
-    statut = donnee.get("statut", "utilisateur")
+    statut = donnee.get("statut")
     annuaire = DOSSIER_ANNUAIRES / f"annuaire_{nom}.csv"
 
     if FICHIER_COMPTES.exists():
@@ -206,7 +206,7 @@ def Gestion_Permission(donnee, demandeur):
     
     with open(FICHIER_PERMISSIONS, "w", newline="", encoding="utf-8") as fichier:
         csv.writer(fichier).writerows(nouveau)
-    return {"status": 200, "message": "OK"}
+    return {"status": 200, "message": "Modification Effectuée"}
 
 def Liste_Comptes():
     comptes = []

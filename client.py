@@ -112,6 +112,64 @@ def menu_modif(prenom, nom, tel, adresse, mail):
                 mail = test_valeur("Email")
     return {"Nom": nom, "Prenom": prenom, "Telephone": tel, "Adresse": adresse, "Email": mail}
 
+def menu_compte(utilisateur):
+    clear_console()
+    titre = "--- GESTION COMPTES ---"
+    taille = 50
+    options = [
+        "1. Créer Compte",
+        "2. Supprimer Compte",
+        "3. Lister Compte",
+        "0. Retour"
+    ]
+    print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
+    deco_console(titre, taille, options)
+    while True:
+        choix_compte = input("Faites votre choix > ")
+        if choix_compte == "1":
+            clear_console()
+            print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
+            print("=" * taille)
+            print(f"{"--- CRÉER UN COMPTE ---":^{taille}}")
+            print("=" * taille)
+            while True:
+                nom = input("Nom d'utilisateur : ")
+                if nom == "":
+                    print("Insérer un Nom d'utilisateur")
+                else:
+                    break
+            while True:
+                mdp = getpass("Mot de passe : ")
+                if len(mdp) < 5 :
+                    print("Le Mot de passe est trop court")
+                else:
+                    mdp = sha512(mdp.encode()).hexdigest()
+                    break
+            titre = "ROLE"
+            options = ["1. Administrateur", "2. Utilisateur"]
+            deco_console(titre, taille, options)
+            while True:
+                choix_role = input("Faites votre choix > ")
+                if choix_role == "1":
+                    statut = "admin"
+                    break
+                elif choix_role == "2":
+                    statut = "utilisateur"
+                    break
+                else:
+                    print("Le choix doit être entre '1' ou '2'.")
+                    continue
+            reponse = reseau.envoyer_PDU("CREATION_COMPTE", {"nom": nom, "mot_de_passe": mdp, "statut": statut}, utilisateur)
+            print(reponse["message"])
+        elif choix_compte == "2":
+            # supprimer compte
+            ...
+        elif choix_compte == "3":
+            # lister les comptes existant avec pour information (leur role, le nombre de contact dans leur annuaire, chez qui ils ont droit de consuleter
+            ...
+        elif choix_compte == "0":
+            break
+    
 def menu_principal():
     utilisateur = None
     role = None
@@ -150,7 +208,7 @@ def menu_principal():
                 "2. Ajouter / Modifier contact",
                 "3. Rechercher",
                 "4. Gérer permissions",
-                "5. Créer compte" if role == "admin" else None,
+                "5. Gérer comptes" if role == "admin" else None,
                 "0. Déconnexion"
                 ]
             deco_console(titre, taille, options_brutes)
@@ -316,27 +374,7 @@ def menu_principal():
                     print(reponse["message"])
                 
             elif choix == "5" and role == "admin":
-                clear_console()
-                print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
-                print("=" * taille)
-                print(f"{"--- CRÉER UN COMPTE ---":^{taille}}")
-                print("=" * taille)
-                while True:
-                    nom = input("Nom d'utilisateur : ")
-                    if nom == "":
-                        print("Insérer un Nom d'utilisateur")
-                    else:
-                        break
-                while True:
-                    mdp = getpass("Mot de passe : ")
-                    if len(mdp) < 5 :
-                        print("Le Mot de passe est trop court")
-                    else:
-                        mdp = sha512(mdp.encode()).hexdigest()
-                        break
-                statut = input("Role (Administrateur/Utilisateur) : ")
-                reponse = reseau.envoyer_PDU("CREATION_COMPTE", {"nom": nom, "mot_de_passe": mdp, "statut": statut}, utilisateur)
-                print(reponse["message"])
+                menu_compte(utilisateur)
 
         input("\nAppuyez sur Entrée pour continuer...")
             
