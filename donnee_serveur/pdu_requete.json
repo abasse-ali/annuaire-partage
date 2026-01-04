@@ -1,9 +1,7 @@
 {
-    "action": "MODIF_COMPTE",
+    "action": "LISTE_CONTACTS",
     "demandeur": "ali",
     "corps": {
-        "nom_compte": "chef",
-        "nouveau_mdp": "0b0c4862bc529856bb43cd01b56f95093b711bf2a8568ab7a690b01c21b9f5edbf7600375aac03bc4bbd350e14bab86f81bb7c766e6419aabdb1645b342dc28f",
-        "nouveau_statut": null
+        "proprietaire_cible": "ali"
     }
 }

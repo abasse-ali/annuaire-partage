@@ -371,10 +371,14 @@ def menu_principal():
                         print(reponse["message"])
                 else:
                     tel = input("Numéro de téléphone : ").strip()
-                    tel_pattern = r"^0[1-9][0-9]{8}$"
-                    while not(re.match(tel_pattern, tel)):
-                        print("Le numéro doit contenir 10 chiffres et doit être du forme : 0YXXXXXXXX.")
-                        tel = input("Numéro de téléphone : ").strip()
+                    if tel != "":
+                        tel_pattern = r"^0[1-9][0-9]{8}$"
+                        while not(re.match(tel_pattern, tel)):
+                            print("Le numéro doit contenir 10 chiffres et doit être du forme : 0YXXXXXXXX.")
+                            tel = input("Numéro de téléphone : ").strip()
+                            if tel == "":
+                                break
+                            
                         
                     adresse = input("Adresse: ").strip()
                     
