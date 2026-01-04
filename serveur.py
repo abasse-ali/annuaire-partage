@@ -191,17 +191,51 @@ def Suppression_Compte(donnee):
 
     return {"status": 200, "message": f"Compte {cible} et données supprimés"}
 
+def Modification_Compte(donnee):
+    cible = donnee.get("nom_compte")
+    nouveau_mdp = donnee.get("nouveau_mdp")       # Peut être None
+    nouveau_statut = donnee.get("nouveau_statut") # Peut être None
+
+    if not FICHIER_COMPTES.exists():
+        return {"status": 404, "message": "Fichier comptes introuvable"}
+
+    comptes = []
+    modifie = False
+
+    # Lecture et modification en mémoire
+    with open(FICHIER_COMPTES, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames
+        for ligne in reader:
+            if ligne["Nom"] == cible:
+                if nouveau_mdp:
+                    ligne["Mot_de_passe"] = nouveau_mdp
+                if nouveau_statut:
+                    ligne["Statut"] = nouveau_statut
+                modifie = True
+            comptes.append(ligne)
+
+    if not modifie:
+        return {"status": 404, "message": f"Compte '{cible}' introuvable"}
+
+    # Réécriture du fichier
+    with open(FICHIER_COMPTES, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(comptes)
+
+    return {"status": 200, "message": f"Compte '{cible}' mis à jour avec succès"}
+
 def Infos_Admin():
     stats = []
-    
-    droits_acces = {} 
+    nbr_annuaires_consultables = {}
     if FICHIER_PERMISSIONS.exists():
         with open(FICHIER_PERMISSIONS, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for ligne in reader:
                 user = ligne.get("Utilisateur_Autorise")
                 if user:
-                    droits_acces[user] = droits_acces.get(user, 0) + 1
+                    nbr_annuaires_consultables[user] = nbr_annuaires_consultables.get(user, 0) + 1
 
     if FICHIER_COMPTES.exists():
         with open(FICHIER_COMPTES, "r", encoding="utf-8") as f:
@@ -221,7 +255,7 @@ def Infos_Admin():
                     "Nom": nom,
                     "Statut": compte["Statut"],
                     "Nb_Contacts": nb_contacts,
-                    "Droits_Consultation": droits_acces.get(nom, 0)
+                    "Nb_Annuaires": nbr_annuaires_consultables.get(nom, 0)
                 })
                 
     return {"status": 200, "donnee": stats}

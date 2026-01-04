@@ -1,4 +1,4 @@
 {
-    "status": 404,
-    "message": "Compte introuvable"
+    "status": 200,
+    "message": "Compte 'chef' mis \u00e0 jour avec succ\u00e8s"
 }

@@ -46,7 +46,7 @@ def deco_console(titre: str, taille: int, options_brutes: list, sous_titre: str 
     largeur_utile = taille - 4
     
     print("=" * taille)
-    print(f"{titre:^{taille}}")
+    print("\033[92m" + f"{titre:^{taille}}" + "\033[0m")
     print("=" * taille)
     
     if sous_titre:
@@ -122,17 +122,16 @@ def menu_compte(utilisateur):
     options = [
         "1. Créer Compte",
         "2. Supprimer Compte",
-        "3. Lister Compte",
+        "3. Modifier Compte",
+        "4. Lister Compte",
         "0. Retour"
     ]
-    print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
     deco_console(titre, taille, options)
     choix_compte = input("Faites votre choix > ")
     if choix_compte == "1":
         clear_console()
-        print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
         print("=" * taille)
-        print(f"{"--- CRÉER UN COMPTE ---":^{taille}}")
+        print("\033[92m" + f"{"--- CRÉER UN COMPTE ---":^{taille}}" + "\033[0m")
         print("=" * taille)
         while True:
             nom = input("Nom d'utilisateur : ")
@@ -153,7 +152,7 @@ def menu_compte(utilisateur):
         while True:
             choix_role = input("Faites votre choix > ")
             if choix_role == "1":
-                statut = "admin"
+                statut = "administrateur"
                 break
             elif choix_role == "2":
                 statut = "utilisateur"
@@ -166,9 +165,8 @@ def menu_compte(utilisateur):
         
     elif choix_compte == "2":
         clear_console()
-        print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
         print("=" * taille)
-        print(f"{"--- SUPPRESSION COMPTE ---":^{taille}}")
+        print("\033[92m" + f"{"--- SUPPRESSION COMPTE ---":^{taille}}" + "\033[0m")
         print("=" * taille)
         
         cible = input("Nom du compte à supprimer : ").strip()
@@ -187,28 +185,80 @@ def menu_compte(utilisateur):
 
     elif choix_compte == "3":
         clear_console()
+        print("=" * taille)
+        print("\033[92m" + f"{"--- MODIFIER COMPTE ---":^{taille}}" + "\033[0m")
+        print("=" * taille)
+
+        cible = input("Nom du compte à modifier : ").strip()
+        
+        if cible == "":
+            print("Annulation.")
+        else:
+            print(f"Modification de '{cible}' (Laissez vide pour ne pas changer)")
+            
+            # Gestion du Statut
+            nouveau_statut = None
+            print("Nouveau rôle ? (1=Admin, 2=Utilisateur, Vide=Inchangé)")
+            choix_role = input(" > ").strip()
+            if choix_role == "1": nouveau_statut = "administrateur"
+            elif choix_role == "2": nouveau_statut = "utilisateur"
+
+            # Gestion du Mot de passe
+            nouveau_mdp = None
+            mdp_input = getpass("Nouveau mot de passe (Vide=Inchangé) : ").strip()
+            if mdp_input != "":
+                if len(mdp_input) < 5:
+                    print("Attention: Mot de passe ignoré (trop court).")
+                else:
+                    nouveau_mdp = sha512(mdp_input.encode()).hexdigest()
+
+            # Envoi de la requête seulement si quelque chose change
+            if nouveau_statut or nouveau_mdp:
+                donnees_modif = {
+                    "nom_compte": cible,
+                    "nouveau_mdp": nouveau_mdp,
+                    "nouveau_statut": nouveau_statut
+                }
+                reponse = reseau.envoyer_PDU("MODIF_COMPTE", donnees_modif, utilisateur)
+                print(f"Résultat : {reponse['message']}")
+            else:
+                print("Aucune modification demandée.")
+    
+    elif choix_compte == "4":
+        clear_console()
         reponse = reseau.envoyer_PDU("INFOS_ADMIN", {}, utilisateur)
         
         if reponse["status"] == 200:
             print("\033[92m" + f"{"=== LISTE GLOBALE DES COMPTES ===":^{80}}" + "\033[0m")
             print("-" * 80)
-            # En-tête du tableau
-            print(f"| {'Nom':<20} | {'Rôle':<12} | {'Contacts':<10} | {'Accès Droit':<12} |")
+            print(f"| {'Nom':<20} | {'Rôle':<15} | {'Contacts':<10} | {'Annuaire Accèssible':<22} |")
             print("-" * 80)
             
             for row in reponse["donnee"]:
                 nom = row['Nom']
                 role = row['Statut']
                 nb_c = str(row['Nb_Contacts'])
-                nb_d = str(row['Droits_Consultation'])
+                nb_d = str(row['Nb_Annuaires'])
                 
                 # Code couleur : Admin en Rouge, Utilisateur en Cyan
-                coul = "\033[91m" if role == "admin" else "\033[96m"
+                coul = "\033[91m" if role == "administrateur" else "\033[96m"
                 reset = "\033[0m"
                 
-                print(f"| {coul}{nom:<20}{reset} | {role:<12} | {nb_c:<10} | {nb_d:<12} |")
+                print(f"| {coul}{nom:<20}{reset} | {role:<15} | {nb_c:<10} | {nb_d:<22} |")
             print("-" * 80)
-            print(f"Total comptes : {len(reponse['donnee'])}")
+            print(f"Total comptes : {len(reponse['donnee'])}\n")
+            print("Voir la liste complète des annuaires accessible d'un compte")
+            cible_compte = input("Le compte de qui (vide pour annuler) : ")
+            if cible_compte != "":
+                reponse = reseau.envoyer_PDU("LISTE_PROPRIO", {}, cible_compte)
+                print(f"Cible : {cible_compte}")
+                if reponse["status"] == 200 and reponse["donnee"] != []:
+                    for personne in reponse["donnee"]:
+                        print(f"  - {personne}")
+                elif reponse["donnee"] == []:
+                    print("  Aucun")
+                else:
+                    print(reponse["message"])
         else:
             print("Erreur lors de la récupération des données.")
 
@@ -232,6 +282,7 @@ def menu_principal():
                 "1. Connexion",
                 "2. Quitter"
                 ]
+            print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
             deco_console(titre, taille, options)
             
             choix = input("Faite votre choix > ").strip()
@@ -253,7 +304,7 @@ def menu_principal():
                 "2. Ajouter / Modifier contact",
                 "3. Rechercher",
                 "4. Gérer permissions",
-                "5. Gérer comptes" if role == "admin" else None,
+                "5. Gérer comptes" if role == "administrateur" else None,
                 "0. Déconnexion"
                 ]
             deco_console(titre, taille, options_brutes)
@@ -418,7 +469,7 @@ def menu_principal():
                 else:
                     print(reponse["message"])
                 
-            elif choix == "5" and role == "admin":
+            elif choix == "5" and role == "administrateur":
                 menu_compte(utilisateur)
 
         input("\nAppuyez sur Entrée pour continuer...")

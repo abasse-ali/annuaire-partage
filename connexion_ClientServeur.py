@@ -114,6 +114,7 @@ def recevoir_PDU(chemin_requete, chemin_reponse):
     elif action == "LISTE_COMPTES" : reponse = serveur.Liste_Comptes()
     elif action == "LISTE_DROIT": reponse = serveur.Liste_Droit(demandeur)
     elif action == "SUPPRESSION_COMPTE": reponse = serveur.Suppression_Compte(corps)
+    elif action == "MODIF_COMPTE": reponse = serveur.Modification_Compte(corps)
     elif action == "INFOS_ADMIN": reponse = serveur.Infos_Admin()
     else: reponse = {"status": 400, "message": "Action inconnue"}
 
