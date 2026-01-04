@@ -1,47 +1,4 @@
 {
     "status": 200,
-    "donnee": [
-        {
-            "Nom": "JAMAL",
-            "Prenom": "Kabalzar",
-            "Telephone": "5999999999",
-            "Adresse": "",
-            "Email": "enormebitedegrosblack@yopmail.com"
-        },
-        {
-            "Nom": "ALI",
-            "Prenom": "Abasse",
-            "Telephone": "0744754699",
-            "Adresse": "5 Rue Simone Boudet, 31200 Toulouse",
-            "Email": "saadannealiabasse@gmail.com"
-        },
-        {
-            "Nom": "BOUTAHIR",
-            "Prenom": "Ayyub",
-            "Telephone": "0645563125",
-            "Adresse": "",
-            "Email": "ayyubboutahir@gmail.com"
-        },
-        {
-            "Nom": "JINORO",
-            "Prenom": "Gaillor",
-            "Telephone": "0652455699",
-            "Adresse": "5 rue simone boudet, 31200 toulouse",
-            "Email": "gjinoro2@gmail.com"
-        },
-        {
-            "Nom": "AFFINE",
-            "Prenom": "Ali",
-            "Telephone": "0255467588",
-            "Adresse": "",
-            "Email": "chaudgars11@yomail.dm"
-        },
-        {
-            "Nom": "CHEFF",
-            "Prenom": "Chef",
-            "Telephone": "",
-            "Adresse": "",
-            "Email": "cheffff@gmail.com"
-        }
-    ]
+    "role": "administrateur"
 }

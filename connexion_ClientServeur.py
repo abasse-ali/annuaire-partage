@@ -110,6 +110,7 @@ def recevoir_PDU(chemin_requete, chemin_reponse):
     elif action == "LISTE_CONTACTS": reponse = serveur.Liste_Contacts(corps, demandeur)
     elif action == "GERER_PERMISSION": reponse = serveur.Gestion_Permission(corps, demandeur)
     elif action == "MODIF_CONTACT": reponse = serveur.Modification_Contact(corps, demandeur)
+    elif action == "SUPPR_CONTACT": reponse = serveur.Suppression_Contact(corps, demandeur)
     elif action == "LISTE_PROPRIO": reponse = serveur.Liste_Proprio(demandeur)
     elif action == "LISTE_COMPTES" : reponse = serveur.Liste_Comptes()
     elif action == "LISTE_DROIT": reponse = serveur.Liste_Droit(demandeur)

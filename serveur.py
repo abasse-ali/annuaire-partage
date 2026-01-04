@@ -145,6 +145,38 @@ def Modification_Contact(donnee, demandeur):
 """
 --------------------------------------------------------------------------------------------------------
 """
+def Suppression_Contact(donnee, demandeur):
+    cible = donnee.get("contact") # On attend {"Nom": "...", "Prenom": "..."}
+    path = DOSSIER_ANNUAIRES / f"annuaire_{demandeur}.csv"
+    
+    if not path.exists():
+        return {"status": 404, "message": "Annuaire introuvable"}
+    
+    contacts_restants = []
+    trouve = False
+    
+    # Lecture et filtrage
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames
+        for ligne in reader:
+            # On compare Nom et Prénom pour identifier le contact
+            if ligne["Nom"] == cible["Nom"] and ligne["Prenom"] == cible["Prenom"]:
+                trouve = True
+            else:
+                contacts_restants.append(ligne)
+    
+    if not trouve:
+        return {"status": 404, "message": "Contact introuvable"}
+    
+    # Réécriture du fichier
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(contacts_restants)
+        
+    return {"status": 200, "message": "Contact supprimé avec succès"}
+
 def Suppression_Compte(donnee):
     cible = donnee.get("nom_compte")
     

@@ -301,8 +301,8 @@ def menu_principal():
             taille = 40
             options_brutes = [
                 "1. Lister contacts",
-                "2. Ajouter / Modifier contact",
-                "3. Rechercher",
+                "2. Gérer contacts",
+                "3. Rechercher contacts",
                 "4. Gérer permissions",
                 "5. Gérer comptes" if role == "administrateur" else None,
                 "0. Déconnexion"
@@ -339,58 +339,85 @@ def menu_principal():
                 
             elif choix == "2":
                 clear_console()
-                taille = 60
-                print("\033[92m" + f"{"=== ANNUAIRE PARTAGE ===":^{taille}}" + "\033[0m")
-                print("=" * taille)
-                print(f"{"--- AJOUT D'UN CONTACT ---":^{taille}}")
-                print("=" * taille)
-                print("Les champs annotés d'une '*' sont obligatoires.")
-                nom = test_valeur("Nom").upper()
-                prenom = test_valeur("Prénom").capitalize()
-                existe = False
-                reponse = reseau.envoyer_PDU("LISTE_CONTACTS", {"proprietaire_cible": utilisateur},utilisateur)
-                if reponse["status"] == 200:
-                    for contact in reponse["donnee"]:
-                        if contact["Nom"] == nom and contact["Prenom"] == prenom:
-                            existe = True
-                            contact_actuel = contact
-                            break
-                if existe:
-                    print(f"Le contact '{prenom} {nom}' existe déjà.")
-                    while True:
-                        modif = input("Voulez-vous modifier ce contact ? [O/N] : ").strip().lower()
-                        if modif in ["o", "n"]: break
-                        else: print("Répondez par O ou N.")
-                        
-                    if modif == "o":
-                        tel = contact_actuel["Telephone"]
-                        adresse = contact_actuel["Adresse"]
-                        mail = contact_actuel["Email"]
-                        donnee = menu_modif(prenom, nom, tel, adresse, mail)
-                        reponse = reseau.envoyer_PDU("MODIF_CONTACT", {"contact": donnee}, utilisateur)
-                        print(reponse["message"])
-                else:
-                    tel = input("Numéro de téléphone : ").strip()
-                    if tel != "":
-                        tel_pattern = r"^0[1-9][0-9]{8}$"
-                        while not(re.match(tel_pattern, tel)):
-                            print("Le numéro doit contenir 10 chiffres et doit être du forme : 0YXXXXXXXX.")
-                            tel = input("Numéro de téléphone : ").strip()
-                            if tel == "":
+                titre = f"--- GESTION CONTACT ---"
+                taille = 40
+                options_brutes = [
+                    "1. Ajouter/Modifier contacts",
+                    "2. Supprimer contacts"
+                    ]
+                deco_console(titre, taille, options_brutes)
+                choix_contact = input("Faites votre choix > ")
+                if choix_contact == "1":
+                    clear_console()
+                    taille = 60
+                    print("=" * taille)
+                    print("\033[92m" + f"{"--- AJOUT D'UN CONTACT ---":^{taille}}" + "\033[0m")
+                    print("=" * taille)
+                    print("Les champs annotés d'une '*' sont obligatoires.")
+                    nom = test_valeur("Nom").upper()
+                    prenom = test_valeur("Prénom").capitalize()
+                    existe = False
+                    reponse = reseau.envoyer_PDU("LISTE_CONTACTS", {"proprietaire_cible": utilisateur},utilisateur)
+                    if reponse["status"] == 200:
+                        for contact in reponse["donnee"]:
+                            if contact["Nom"] == nom and contact["Prenom"] == prenom:
+                                existe = True
+                                contact_actuel = contact
                                 break
+                    if existe:
+                        print(f"Le contact '{prenom} {nom}' existe déjà.")
+                        while True:
+                            modif = input("Voulez-vous modifier ce contact ? [O/N] : ").strip().lower()
+                            if modif in ["o", "n"]: break
+                            else: print("Répondez par O ou N.")
                             
+                        if modif == "o":
+                            tel = contact_actuel["Telephone"]
+                            adresse = contact_actuel["Adresse"]
+                            mail = contact_actuel["Email"]
+                            donnee = menu_modif(prenom, nom, tel, adresse, mail)
+                            reponse = reseau.envoyer_PDU("MODIF_CONTACT", {"contact": donnee}, utilisateur)
+                            print(reponse["message"])
+                    else:
+                        tel = input("Numéro de téléphone : ").strip()
+                        if tel != "":
+                            tel_pattern = r"^0[1-9][0-9]{8}$"
+                            while not(re.match(tel_pattern, tel)):
+                                print("Le numéro doit contenir 10 chiffres et doit être du forme : 0YXXXXXXXX.")
+                                tel = input("Numéro de téléphone : ").strip()
+                                if tel == "":
+                                    break
+                                
+                        adresse = input("Adresse: ").strip()
                         
-                    adresse = input("Adresse: ").strip()
-                    
-                    mail = test_valeur("Email")
-                    mail_pattern = r"^[a-zA-Z0-9_.-]+@[a-z]{2,}\.[a-z]{2,}$"
-                    while not(re.match(mail_pattern, mail)):
-                        print(f"exemple mail valide: {prenom.lower()}{nom.lower()}@gmail.com")
                         mail = test_valeur("Email")
+                        mail_pattern = r"^[a-zA-Z0-9_.-]+@[a-z]{2,}\.[a-z]{2,}$"
+                        while not(re.match(mail_pattern, mail)):
+                            print(f"exemple mail valide: {prenom.lower()}{nom.lower()}@gmail.com")
+                            mail = test_valeur("Email")
+                        
+                        donnee = {"Nom": nom, "Prenom": prenom, "Telephone": tel, "Adresse": adresse, "Email": mail}
+                        reponse = reseau.envoyer_PDU("AJOUT_CONTACT", {"contact": donnee}, utilisateur)
+                        print(reponse["message"])
                     
-                    donnee = {"Nom": nom, "Prenom": prenom, "Telephone": tel, "Adresse": adresse, "Email": mail}
-                    reponse = reseau.envoyer_PDU("AJOUT_CONTACT", {"contact": donnee}, utilisateur)
-                    print(reponse["message"])
+                elif choix_contact == "2":
+                    clear_console()
+                    print("=" * taille)
+                    print("\033[92m" + f"{"--- SUPPRESSION CONTACT ---":^{taille}}" + "\033[0m")
+                    print("=" * taille)
+                    nom = input("Nom du contact à supprimer : ").strip().upper()
+                    prenom = input("Prénom du contact à supprimer : ").strip().capitalize()
+                    
+                    if nom == "" or prenom == "":
+                        print("Annulation : Nom et Prénom obligatoires.")
+                    else:
+                        confirm = input(f"Voulez-vous vraiment supprimer '{prenom} {nom}' ? [O/N] : ").lower()
+                        if confirm == "o":
+                            donnee = {"Nom": nom, "Prenom": prenom}
+                            reponse = reseau.envoyer_PDU("SUPPR_CONTACT", {"contact": donnee}, utilisateur)
+                            print(f"Résultat : {reponse['message']}")
+                        else:
+                            print("Suppression annulée.")
 
             elif choix == "3":
                 clear_console()
