@@ -543,7 +543,6 @@ def recevoir_pdu(requete):
 
     cible = None
     
-    
     # 2. Aiguillage (Routing)
     # On compare le mot-clé 'action' et on dirige vers la fonction métier correspondante.
     if action == "CONNEXION":
@@ -713,6 +712,9 @@ def menu_serveur():
             except KeyboardInterrupt:
                 # Gestion propre de l'arrêt avec Ctrl+C
                 print("\nArrêt du serveur...")
+            except Exception as e:
+                # Capture toute autre erreur imprévue
+                print(f"\n[CRASH] Erreur critique : {e}")
             finally:
                 # Nettoyage final (suppression du témoin ONLINE)
                 reseau.deconnecter_serveur()
