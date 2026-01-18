@@ -162,12 +162,9 @@ def Liste_Contacts(donnee, demandeur):
     path = DOSSIER_ANNUAIRES / f"annuaire_{cible}.csv"
     if not path.exists():
         return {"status": 404, "message": "L'annuaire est Introuvable"}
-    if reseau.connecter_serveur():
-        with open(path, "r", encoding="utf-8") as fichier:
-            return {"status": 200, "message": "Liste des contacts transférée au client","donnee": list(csv.DictReader(fichier))}
-    else:
-        return {"status": 503, "message": "Serveur hors ligne (Connexion perdue)"}
-
+    
+    with open(path, "r", encoding="utf-8") as fichier:
+        return {"status": 200, "message": "Liste des contacts transférée au client","donnee": list(csv.DictReader(fichier))}
 """
 --------------------------------------------------------------------------------------------------------
 """
