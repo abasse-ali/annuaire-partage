@@ -541,6 +541,9 @@ def recevoir_pdu(requete):
     # Réponse par défaut si l'action n'est pas reconnue
     reponse = {"status": 400, "message": "Action inconnue"}
 
+    cible = None
+    
+    
     # 2. Aiguillage (Routing)
     # On compare le mot-clé 'action' et on dirige vers la fonction métier correspondante.
     if action == "CONNEXION":
