@@ -6,7 +6,7 @@ Une application Python simulant une architecture Client/Serveur pour la gestion 
 
 ### Utilisateur Standard
 * **Connexion sécurisée** (Mots de passe hachés en SHA-512).
-* **Gestion de contacts (CRUD)** : Ajouter, Modifier, Supprimer des contacts dans son propre annuaire.
+* **Gestion de contacts** : Ajouter, Modifier, Supprimer des contacts dans son propre annuaire.
 * **Recherche** : Rechercher des contacts par mots-clés.
 * **Système de Permissions** : Accorder ou retirer le droit à d'autres utilisateurs de consulter votre annuaire.
 * **Consultation** : Voir les annuaires des utilisateurs qui vous ont donné la permission.
