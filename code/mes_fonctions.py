@@ -1,6 +1,16 @@
 import os
 
 def deco_console(titre: str, taille: int, options_brutes: list, sous_titre: str = None):
+    """
+    Affiche un menu ou une liste formatée encadrée dans la console.
+    Gère l'affichage en colonnes dynamiques si la liste est longue.
+    
+    Args:
+        titre (str): Titre principal du menu.
+        taille (int): Largeur de l'affichage.
+        options_brutes (list): Liste des items à afficher.
+        sous_titre (str, optional): En-tête interne optionnel.
+    """
     options = [str(opt) for opt in options_brutes if opt is not None]
     largeur_utile = taille - 4
     
@@ -34,6 +44,15 @@ def deco_console(titre: str, taille: int, options_brutes: list, sous_titre: str 
     print("=" * taille)
 
 def test_valeur(variable: str) -> str:
+    """
+    Demande une saisie utilisateur en boucle jusqu'à ce qu'elle ne soit pas vide.
+    
+    Args:
+        variable (str): Nom du champ à afficher dans le prompt.
+        
+    Returns:
+        str: La valeur saisie validée.
+    """
     while True:
         valeur = input(f"{variable}* : ").strip()
         if valeur == "":
@@ -44,5 +63,8 @@ def test_valeur(variable: str) -> str:
     return valeur
 
 def clear_console():
+    """
+    Efface le contenu de la console de manière compatible Windows (cls) et Linux/Mac (clear).
+    """
     os.system('cls' if os.name == 'nt' else 'clear')
     

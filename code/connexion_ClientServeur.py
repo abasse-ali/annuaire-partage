@@ -56,7 +56,9 @@ DOSSIER_ANNUAIRES = DOSSIER_DATA / "annuaires"
 
 def creer_serveur():
     """
-
+    Initialise l'architecture du serveur au démarrage.
+    Crée les dossiers (donnee_serveur, annuaires) et les fichiers CSV vides s'ils n'existent pas.
+    Crée un compte Administrateur par défaut si aucun admin n'est détecté.
     """
     DOSSIER_DATA.mkdir(exist_ok=True)
     DOSSIER_ANNUAIRES.mkdir(exist_ok=True)
@@ -94,7 +96,10 @@ def creer_serveur():
         print(f"Compte '{nom_defaut}' (Admin) créé avec succès.")
 def connecter_serveur():
     """
+    Vérifie si le serveur est en ligne en cherchant la présence du fichier témoin '.server_online'.
     
+    Returns:
+        bool: True si le serveur est en ligne, False sinon.
     """
     if FICHIER_TEMOIN.exists():
         return True
@@ -102,7 +107,7 @@ def connecter_serveur():
 
 def deconnecter_serveur():
     """
-    
+    Supprime le fichier témoin '.server_online' pour indiquer que le serveur est fermé.
     """
     if FICHIER_TEMOIN.exists():
         os.remove(FICHIER_TEMOIN)
@@ -110,7 +115,18 @@ def deconnecter_serveur():
 
 def envoyer_PDU(action, corps, utilisateur_courant=None):
     """
+    Gère la communication fichier avec le serveur.
+    1. Écrit la requête dans 'pdu_requete.json'.
+    2. Attend (avec timeout) l'apparition de 'pdu_reponse.json'.
+    3. Lit et retourne la réponse.
     
+    Args:
+        action (str): Nom de l'action à effectuer.
+        corps (dict): Paramètres de l'action.
+        utilisateur_courant (str, optional): Nom de l'utilisateur faisant la requête.
+        
+    Returns:
+        dict: La réponse du serveur ou un message d'erreur (500/503/504).
     """
     pdu = {"action": action, "demandeur": utilisateur_courant, "corps": corps}
     

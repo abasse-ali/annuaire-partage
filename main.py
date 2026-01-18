@@ -5,6 +5,10 @@ import subprocess
 from pathlib import Path
 
 def lancer_app():
+    """
+    Détecte le système d'exploitation (Windows, Linux, macOS) et lance automatiquement
+    deux terminaux distincts : un pour le Serveur et un pour le Client.
+    """
     systeme = platform.system()
     
     # Récupère le chemin du dossier où se trouve ce script (launcher.py)
